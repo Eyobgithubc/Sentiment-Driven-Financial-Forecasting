@@ -7,7 +7,7 @@ from textblob import TextBlob
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.dates as mdates
-
+import re
 
 
 
@@ -129,6 +129,70 @@ def analyze_publication_frequency(df, time_interval='D', spike_threshold=2):
         print(spike_articles[['date', 'headline']].sort_values(by='date'))
 
     return freq_df
+
+
+def perform_topic_modeling(df, num_topics=5, num_words=10):
+
+    vectorizer = CountVectorizer(stop_words='english')
+    dtm = vectorizer.fit_transform(df['headline'])
+
+    
+    lda = LatentDirichletAllocation(n_components=num_topics, random_state=42)
+    lda.fit(dtm)
+
+    topics = []
+    for index, topic in enumerate(lda.components_):
+        top_words = [vectorizer.get_feature_names_out()[i] for i in topic.argsort()[-num_words:]]
+        topics.append(f"Topic {index+1}: " + " ".join(top_words))
+        print(f"Topic {index+1}: " + ", ".join(top_words))
+
+    return lda, topics
+
+
+
+
+
+
+def is_email_address(s):
+    """Check if a string is an email address."""
+    return isinstance(s, str) and '@' in s
+
+def extract_domain(email):
+    """Extract domain from an email address."""
+    if is_email_address(email):
+        match = re.search(r'@([a-zA-Z0-9.-]+)', email)
+        if match:
+            return match.group(1)
+    return None
+
+def analyze_publisher_domains(df):
+   
+
+    df['domain'] = df['publisher'].apply(lambda x: extract_domain(x) if isinstance(x, str) else None)
+    
+  
+    df = df.dropna(subset=['domain'])
+    
+  
+    domain_counts = df['domain'].value_counts().reset_index()
+    domain_counts.columns = ['Domain', 'Frequency']
+    
+    return domain_counts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
