@@ -1,6 +1,7 @@
 data
 myenv
 .venv
+ notebooks/sentiment_model.pkl
 xxx
 TA_Lib-0.4.28-cp38-cp38-win_amd64.whl
 <<<<<<< HEAD
